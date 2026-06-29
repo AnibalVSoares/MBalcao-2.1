@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Endereços Gov - MVP Família</title>
+    <style>
+        :root {
+            --gov-blue: #1351b4;
+            --gov-dark-blue: #0c326f;
+            --border-color: #d1d5db;
+            --bg-color: #f8f9fa;
+            --text-main: #333;
+            --text-muted: #6b7280;
+            --gov-yellow: #ffc107;
+            --gov-yellow-text: #856404;
+        }
+
+        body { font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #ffffff; display: flex; justify-content: center; margin: 0; padding: 0; }
+        .mobile-container { width: 100%; max-width: 100%; background-color: #ffffff; border-radius: 0; box-shadow: none; display: flex; flex-direction: column; position: relative; height: 100vh; overflow: hidden; }
+        .header { display: flex; justify-content: flex-start; align-items: center; padding: 24px 20px 16px 20px; border-bottom: 1px solid var(--border-color); background-color: #fff; z-index: 2; }
+        .header h2 { margin: 0; font-size: 18px; color: var(--text-main); }
+        .page-content { flex-grow: 1; overflow-y: auto; padding-bottom: 90px; background-color: #fff; }
+        .data-section { padding: 20px; border-bottom: 1px solid var(--border-color); }
+        .section-title { font-size: 12px; font-weight: bold; color: var(--text-main); text-transform: uppercase; margin-bottom: 12px; }
+        .info-box { border: 1px solid var(--border-color); border-radius: 4px; padding: 12px; display: flex; justify-content: space-between; align-items: center; background-color: #fff; margin-bottom: 8px; }
+        .selected-box { border: 1px solid var(--gov-yellow); background-color: #fffdf5; margin-bottom: 8px; animation: fadeIn 0.3s ease-in-out; }
+        .info-text { font-size: 14px; color: var(--text-main); line-height: 1.4; }
+        .badge { padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; white-space: nowrap; }
+        .badge-warning { background-color: var(--gov-yellow); color: var(--gov-yellow-text); }
+        .btn-action { background: none; border: none; color: var(--gov-blue); font-weight: bold; font-size: 14px; cursor: pointer; display: flex; align-items: center; padding: 0; margin-top: 12px; }
+        .btn-action span { font-size: 18px; margin-right: 8px; font-weight: normal; }
+        .btn-action:hover { text-decoration: underline; }
+        .expanded-list { display: block; margin-top: 15px; padding-top: 15px; border-top: 1px dashed var(--border-color); animation: fadeIn 0.3s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
+        .helper-text { font-size: 13px; color: var(--text-muted); margin-bottom: 15px; line-height: 1.4; }
+        .scrollable { max-height: 250px; overflow-y: auto; border: 1px solid var(--border-color); border-radius: 4px; background: var(--bg-color); margin-bottom: 15px; }
+        .scrollable::-webkit-scrollbar { width: 6px; }
+        .scrollable::-webkit-scrollbar-thumb { background-color: #c1c1c1; border-radius: 4px; }
+        .radio-option { display: flex; align-items: flex-start; padding: 12px; border-bottom: 1px solid var(--border-color); cursor: pointer; }
+        .radio-option:last-child { border-bottom: none; }
+        .radio-option:hover { background-color: #e5e7eb; }
+        .radio-option input[type="radio"] { margin-top: 2px; margin-right: 12px; transform: scale(1.2); cursor: pointer; }
+        .radio-label { font-size: 14px; color: var(--text-main); width: 100%; }
+        .add-form-container { display: none; padding-top: 15px; border-top: 1px dashed var(--border-color); animation: fadeIn 0.3s ease-in-out; }
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; font-size: 14px; font-weight: bold; color: var(--text-main); margin-bottom: 5px; }
+        .form-group input { width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 4px; font-size: 14px; box-sizing: border-box; }
+        .btn-continue { background-color: var(--gov-blue); color: white; border: none; padding: 12px 24px; border-radius: 20px; font-size: 14px; font-weight: bold; cursor: pointer; display: block; width: 100%; text-align: center; }
+        .btn-continue:hover{ background-color: var(--gov-dark-blue); }
+        .sticky-footer { position: absolute; bottom: 0; width: 100%; background: white; padding: 15px 20px; box-sizing: border-box; border-top: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; z-index: 10; }
+        .btn-confirmar-geral { background-color: var(--gov-blue); color: white; border: none; padding: 12px 28px; border-radius: 25px; font-size: 15px; font-weight: bold; cursor: pointer; display: flex; align-items: center; transition: 0.2s; }
+        .btn-confirmar-geral span { margin-right: 8px; font-size: 18px; }
+        .btn-confirmar-geral:hover { background-color: var(--gov-dark-blue); transform: scale(1.02); }
+        .modal { display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 20; justify-content: center; align-items: center; }
+        .modal-content { background: white; padding: 25px; border-radius: 8px; text-align: center; width: 80%; border-top: 5px solid #28a745; }
+        
+        .cpf-vinculado-item { margin-bottom: 8px; }
+        .cpf-vinculado-nome { font-weight: bold; font-size: 14px; color: var(--text-main); }
+        .cpf-vinculado-cpf { font-size: 12px; color: var(--text-muted); }
+    </style>
+</head>
+<body>
+
+    <div class="mobile-container">
+        <div class="header">
+            <h2>Dados da Família</h2>
+        </div>
+
+        <div class="page-content" id="scroll-area">
+            
+            <div class="data-section" id="section-endereco">
+                <div class="section-title">ENDEREÇO</div>
+
+                <div id="content-endereco" class="content-wrapper">
+                    
+                    <div id="display-endereco" style="display: none;"></div>
+
+                    <div class="expanded-list" id="list-endereco">
+                        <div class="helper-text">Encontramos <strong id="count-endereco">0</strong> endereços em nossa base. Relacionados ao cpf: <strong id="header-cpf"></strong></div>
+                        <div class="scrollable" id="scroll-endereco"></div>
+                    </div>
+
+                    <div class="add-form-container" id="add-form-endereco">
+                        <div class="section-title" style="margin-bottom:12px;">Adicionar endereço</div>
+                        <div class="form-group">
+                            <label>CEP</label>
+                            <input type="text" id="new-cep-input" placeholder="00000-000">
+                        </div>
+                        <div class="form-group">
+                            <label>Logradouro</label>
+                            <input type="text" id="new-logradouro-input" placeholder="Rua das Flores">
+                        </div>
+                        <div class="form-group">
+                            <label>Número</label>
+                            <input type="text" id="new-numero-input" placeholder="324">
+                        </div>
+                        <div class="form-group">
+                            <label>Complemento</label>
+                            <input type="text" id="new-complemento-input" placeholder="ap 302">
+                        </div>
+                        <div class="form-group">
+                            <label>Bairro</label>
+                            <input type="text" id="new-bairro-input" placeholder="Centro">
+                        </div>
+                        <div class="form-group">
+                            <label>Cidade</label>
+                            <input type="text" id="new-cidade-input" placeholder="Curitiba">
+                        </div>
+                        <div class="form-group">
+                            <label>Estado</label>
+                            <input type="text" id="new-estado-input" placeholder="Paraná">
+                        </div>
+                        <button class="btn-continue" onclick="confirmAdd()">Continuar</button>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="sticky-footer">
+            <button class="btn-action" onclick="showAddForm()" style="margin-top: 0;">
+                <span style="font-size: 20px;">+</span> Adicionar um novo endereço
+            </button>
+            <button class="btn-confirmar-geral" onclick="confirmarTudo()"><span>&#x2714;</span> Confirmar</button>
+        </div>
+
+        <div id="modal-sucesso" class="modal">
+            <div class="modal-content">
+                <div style="color: #28a745; font-size: 40px; margin-bottom: 10px;">&#x2714;</div>
+                <p style="margin: 0; color: var(--text-main); font-weight: bold; font-size: 16px;">O endereço foi atualizado com sucesso para todos os membros da família.</p>
+                <button onclick="fecharModal()" style="margin-top: 20px; padding: 8px 20px; background: var(--gov-blue); color: white; border: none; border-radius: 4px; cursor: pointer;">Voltar</button>
+            </div>
+        </div>
+
+    </div>
+
+    <script src="BCcontatos.js"></script>
+
+    <script>
+        let cpfAtual = null;
+
+        // Dispara a mensagem para o roteador (index.html) para atualizar a tela esquerda
+        function notificarComposicaoFamiliar(isConfirmado) {
+            try {
+                const endereco = localStorage.getItem('EnderecosGov_MVP_Endereco');
+                window.parent.postMessage({
+                    acao: 'atualizarVisual',
+                    endereco: endereco,
+                    confirmado: isConfirmado
+                }, '*');
+            } catch(e) { console.warn("Erro ao notificar roteador:", e); }
+        }
+
+        window.addEventListener('message', function(event) {
+            if (event.data && event.data.acao === 'mudarCPF') {
+                carregarDados(event.data.cpf);
+            }
+        });
+
+        function renderizarVinculados() {
+            let html = '';
+            for (const key in BCcontatos) {
+                const c = BCcontatos[key].cidadao;
+                html += `
+                    <div class="cpf-vinculado-item">
+                        <div class="cpf-vinculado-nome">${c.nome}</div>
+                        <div class="cpf-vinculado-cpf">CPF: ${c.cpf}</div>
+                    </div>
+                `;
+            }
+            return html;
+        }
+
+        function carregarDados(cpf) {
+            cpfAtual = cpf;
+            const dados = BCcontatos[cpf];
+            if (!dados) return;
+
+            document.getElementById('header-cpf').innerText = dados.cidadao.cpf;
+
+            document.getElementById('count-endereco').innerText = dados.bases.enderecos.length;
+            document.getElementById('scroll-endereco').innerHTML = dados.bases.enderecos.map(end => `
+                <label class="radio-option">
+                    <input type="radio" name="radio-endereco" value="${end.logradouro}<br>CEP: ${end.cep}" onchange="processarSelecao(this.value)">
+                    <div class="radio-label">${end.logradouro}<br><span style="color:var(--text-muted); font-size:12px;">CEP: ${end.cep}</span></div>
+                </label>
+            `).join('');
+
+            const enderecoFamilia = localStorage.getItem('EnderecosGov_MVP_Endereco');
+            const isConfirmado = localStorage.getItem('EnderecosGov_MVP_Confirmado') === 'true';
+
+            const btnConfirmar = document.querySelector('.btn-confirmar-geral');
+            if (isConfirmado) {
+                btnConfirmar.innerHTML = `<span>&#x2714;</span> Confirmado`;
+                btnConfirmar.style.backgroundColor = '#188038'; 
+            } else {
+                btnConfirmar.innerHTML = `<span>&#x2714;</span> Confirmar`;
+                btnConfirmar.style.backgroundColor = 'var(--gov-blue)'; 
+            }
+
+            if (enderecoFamilia) {
+                processarSelecao(enderecoFamilia, true, isConfirmado);
+            } else {
+                resetarSelecao(true); 
+            }
+            
+            notificarComposicaoFamiliar(isConfirmado);
+        }
+
+        window.onload = () => {
+            if(!localStorage.getItem('EnderecosGov_MVP_Endereco')) {
+                localStorage.setItem('EnderecosGov_MVP_Confirmado', 'false');
+            }
+            carregarDados("345.678.901-23");
+        };
+
+        function processarSelecao(valor, isFromLoad = false, isConfirmado = false) {
+            localStorage.setItem('EnderecosGov_MVP_Endereco', valor);
+            
+            if (!isFromLoad) {
+                localStorage.setItem('EnderecosGov_MVP_Confirmado', 'false');
+                const btnConfirmar = document.querySelector('.btn-confirmar-geral');
+                btnConfirmar.innerHTML = `<span>&#x2714;</span> Confirmar`;
+                btnConfirmar.style.backgroundColor = 'var(--gov-blue)';
+                isConfirmado = false;
+            }
+
+            const containerDisplay = document.getElementById('display-endereco');
+            
+            if (isConfirmado) {
+                const vinculadosHtml = renderizarVinculados();
+                containerDisplay.innerHTML = `
+                    <div class="info-box" style="align-items: flex-start; border-color: var(--border-color); background-color: #fff; margin-bottom: 20px;">
+                        <div class="info-text">
+                            <strong style="font-size:12px; display:block; margin-bottom:4px; color:var(--text-muted);">RESIDENCIAL</strong>
+                            ${valor}
+                        </div>
+                    </div>
+                    <div style="margin-top: 15px;">
+                        <p style="font-size: 15px; color: var(--text-main); margin-bottom: 12px;">Este endereço RESIDENCIAL foi vinculado aos CPFs:</p>
+                        ${vinculadosHtml}
+                    </div>
+                    <button class="btn-action" onclick="resetarSelecao()" style="margin-top: 20px;"><span>✎</span> Alterar seleção</button>
+                `;
+            } else {
+                containerDisplay.innerHTML = `
+                    <div class="info-box selected-box" style="align-items: flex-start;">
+                        <div class="info-text">
+                            <strong style="font-size:12px; display:block; margin-bottom:4px;">ENDEREÇO ÚNICO SELECIONADO</strong>
+                            ${valor}<br>
+                            <span class="badge badge-warning" style="margin-left:0; margin-top:8px;">⚠️ Aguardando confirmação</span>
+                        </div>
+                    </div>
+                    <button class="btn-action" onclick="resetarSelecao()" style="margin-top: 8px;"><span>✎</span> Alterar seleção</button>
+                `;
+            }
+            
+            containerDisplay.style.display = 'block';
+            document.getElementById('list-endereco').style.display = 'none';
+            document.getElementById('add-form-endereco').style.display = 'none';
+        }
+
+        // Quando o usuário quer desfazer e voltar pra lista
+        function resetarSelecao(isFromLoad = false) {
+            localStorage.removeItem('EnderecosGov_MVP_Endereco');
+            localStorage.setItem('EnderecosGov_MVP_Confirmado', 'false');
+            
+            const btnConfirmar = document.querySelector('.btn-confirmar-geral');
+            btnConfirmar.innerHTML = `<span>&#x2714;</span> Confirmar`;
+            btnConfirmar.style.backgroundColor = 'var(--gov-blue)';
+
+            document.getElementById('display-endereco').style.display = 'none';
+            document.getElementById('list-endereco').style.display = 'block';
+            document.getElementById('add-form-endereco').style.display = 'none';
+            
+            document.querySelectorAll('input[name="radio-endereco"]').forEach(el => el.checked = false);
+            
+            // Dispara o fade out na tela da composição imediatamente
+            if(!isFromLoad) notificarComposicaoFamiliar(false);
+        }
+
+        function showAddForm() {
+            document.getElementById('display-endereco').style.display = 'none';
+            document.getElementById('list-endereco').style.display = 'none';
+            document.getElementById('add-form-endereco').style.display = 'block';
+        }
+
+        function confirmAdd() {
+            const logradouro = document.getElementById('new-logradouro-input').value;
+            const numero = document.getElementById('new-numero-input').value;
+            const complemento = document.getElementById('new-complemento-input').value;
+            const cidade = document.getElementById('new-cidade-input').value;
+            const estado = document.getElementById('new-estado-input').value;
+            const cep = document.getElementById('new-cep-input').value;
+            
+            const valorInserido = `${logradouro}, ${numero} - ${complemento}<br>${cidade} - ${estado}<br>CEP: ${cep}`;
+            const isValid = logradouro.trim() !== "" && cep.trim() !== ""; 
+
+            if (isValid) {
+                processarSelecao(valorInserido);
+            } else {
+                alert("Por favor, preencha os dados de Logradouro e CEP corretamente.");
+            }
+        }
+
+        // Dispara o fade in e as marcações finais
+        function confirmarTudo() {
+            const endGlobal = localStorage.getItem('EnderecosGov_MVP_Endereco');
+            if (!endGlobal) {
+                alert("Por favor, selecione ou adicione um endereço antes de confirmar.");
+                return;
+            }
+
+            localStorage.setItem('EnderecosGov_MVP_Confirmado', 'true');
+            notificarComposicaoFamiliar(true);
+            document.getElementById('modal-sucesso').style.display = 'flex';
+        }
+
+        function fecharModal() {
+            document.getElementById('modal-sucesso').style.display = 'none';
+            carregarDados(cpfAtual); 
+        }
+    </script>
+</body>
+</html>
