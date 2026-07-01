@@ -140,7 +140,6 @@
     <script>
         let cpfAtual = null;
 
-        // Dispara a mensagem para o roteador (index.html) para atualizar a tela esquerda
         function notificarComposicaoFamiliar(isConfirmado) {
             try {
                 const endereco = localStorage.getItem('EnderecosGov_MVP_Endereco');
@@ -252,6 +251,19 @@
                             <span class="badge badge-warning" style="margin-left:0; margin-top:8px;">⚠️ Aguardando confirmação</span>
                         </div>
                     </div>
+                    
+                    <div style="margin-top: 20px; margin-bottom: 15px; animation: fadeIn 0.3s ease-in-out;">
+                        <h3 style="font-size: 16px; margin: 0 0 4px 0; color: var(--text-main);">Local no mapa</h3>
+                        <p style="font-size: 13px; color: var(--text-muted); margin: 0 0 12px 0;">Confirme o local ou edite, caso a localização não esteja certa.</p>
+                        <div style="position: relative; width: 100%; height: 200px; border-radius: 8px; overflow: hidden; border: 1px solid var(--border-color);">
+                            <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d14404.70835817887!2d-49.2783063604492!3d-25.43389599999999!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x94dce46d6d84f29d%3A0x23f7ec5d625d2077!2sCentro%2C%20Curitiba%20-%20PR!5e0!3m2!1spt-BR!2sbr!4v1715000000000!5m2!1spt-BR!2sbr" width="100%" height="100%" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+                            
+                            <button style="position: absolute; bottom: 15px; left: 15px; background: white; border: 1px solid var(--border-color); padding: 8px 14px; border-radius: 20px; font-size: 13px; font-weight: bold; color: var(--text-main); cursor: pointer; display: flex; align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.15); transition: background 0.2s;" onmouseover="this.style.background='#f0f4f8'" onmouseout="this.style.background='white'" onclick="alert('Simulação: A função de arrastar o pino para ajustar a geolocalização exata encontra-se em desenvolvimento.')">
+                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px;"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+                                Editar local no mapa
+                            </button>
+                        </div>
+                    </div>
                     <button class="btn-action" onclick="resetarSelecao()" style="margin-top: 8px;"><span>✎</span> Alterar seleção</button>
                 `;
             }
@@ -261,7 +273,6 @@
             document.getElementById('add-form-endereco').style.display = 'none';
         }
 
-        // Quando o usuário quer desfazer e voltar pra lista
         function resetarSelecao(isFromLoad = false) {
             localStorage.removeItem('EnderecosGov_MVP_Endereco');
             localStorage.setItem('EnderecosGov_MVP_Confirmado', 'false');
@@ -276,7 +287,6 @@
             
             document.querySelectorAll('input[name="radio-endereco"]').forEach(el => el.checked = false);
             
-            // Dispara o fade out na tela da composição imediatamente
             if(!isFromLoad) notificarComposicaoFamiliar(false);
         }
 
@@ -304,7 +314,6 @@
             }
         }
 
-        // Dispara o fade in e as marcações finais
         function confirmarTudo() {
             const endGlobal = localStorage.getItem('EnderecosGov_MVP_Endereco');
             if (!endGlobal) {
