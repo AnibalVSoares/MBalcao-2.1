@@ -122,12 +122,12 @@
             <button class="btn-action" onclick="showAddForm()" style="margin-top: 0;">
                 <span style="font-size: 20px;">+</span> Adicionar um novo endereço
             </button>
-            <button class="btn-confirmar-geral" onclick="confirmarTudo()"><span>&#x2714;</span> Confirmar</button>
+            <button class="btn-confirmar-geral" onclick="confirmarTudo()"><span>✔</span> Confirmar</button>
         </div>
 
         <div id="modal-sucesso" class="modal">
             <div class="modal-content">
-                <div style="color: #28a745; font-size: 40px; margin-bottom: 10px;">&#x2714;</div>
+                <div style="color: #28a745; font-size: 40px; margin-bottom: 10px;">✔</div>
                 <p style="margin: 0; color: var(--text-main); font-weight: bold; font-size: 16px;">O endereço foi atualizado com sucesso para todos os membros da família.</p>
                 <button onclick="fecharModal()" style="margin-top: 20px; padding: 8px 20px; background: var(--gov-blue); color: white; border: none; border-radius: 4px; cursor: pointer;">Voltar</button>
             </div>
@@ -155,11 +155,18 @@
             if (event.data && event.data.acao === 'mudarCPF') {
                 carregarDados(event.data.cpf);
             }
+            if (event.data && event.data.acao === 'recarregarDados' && cpfAtual) {
+                carregarDados(cpfAtual);
+            }
         });
 
         function renderizarVinculados() {
             let html = '';
+            const rfIsMembro = localStorage.getItem('EnderecosGov_RF_Membro') !== 'false';
+
             for (const key in BCcontatos) {
+                if (key === "345.678.901-23" && !rfIsMembro) continue;
+
                 const c = BCcontatos[key].cidadao;
                 html += `
                     <div class="cpf-vinculado-item">
@@ -191,10 +198,10 @@
 
             const btnConfirmar = document.querySelector('.btn-confirmar-geral');
             if (isConfirmado) {
-                btnConfirmar.innerHTML = `<span>&#x2714;</span> Confirmado`;
+                btnConfirmar.innerHTML = `<span>✔</span> Confirmado`;
                 btnConfirmar.style.backgroundColor = '#188038'; 
             } else {
-                btnConfirmar.innerHTML = `<span>&#x2714;</span> Confirmar`;
+                btnConfirmar.innerHTML = `<span>✔</span> Confirmar`;
                 btnConfirmar.style.backgroundColor = 'var(--gov-blue)'; 
             }
 
@@ -220,7 +227,7 @@
             if (!isFromLoad) {
                 localStorage.setItem('EnderecosGov_MVP_Confirmado', 'false');
                 const btnConfirmar = document.querySelector('.btn-confirmar-geral');
-                btnConfirmar.innerHTML = `<span>&#x2714;</span> Confirmar`;
+                btnConfirmar.innerHTML = `<span>✔</span> Confirmar`;
                 btnConfirmar.style.backgroundColor = 'var(--gov-blue)';
                 isConfirmado = false;
             }
@@ -251,19 +258,25 @@
                             <span class="badge badge-warning" style="margin-left:0; margin-top:8px;">⚠️ Aguardando confirmação</span>
                         </div>
                     </div>
-                    
+
                     <div style="margin-top: 20px; margin-bottom: 15px; animation: fadeIn 0.3s ease-in-out;">
                         <h3 style="font-size: 16px; margin: 0 0 4px 0; color: var(--text-main);">Local no mapa</h3>
                         <p style="font-size: 13px; color: var(--text-muted); margin: 0 0 12px 0;">Confirme o local ou edite, caso a localização não esteja certa.</p>
                         <div style="position: relative; width: 100%; height: 200px; border-radius: 8px; overflow: hidden; border: 1px solid var(--border-color);">
-                            <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d14404.70835817887!2d-49.2783063604492!3d-25.43389599999999!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x94dce46d6d84f29d%3A0x23f7ec5d625d2077!2sCentro%2C%20Curitiba%20-%20PR!5e0!3m2!1spt-BR!2sbr!4v1715000000000!5m2!1spt-BR!2sbr" width="100%" height="100%" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+                            <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d115211.39178465714!2d-49.35639141042784!3d-25.494955745778817!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x94dce35351cecabb%3A0x9d5f75e2c5deed23!2sCuritiba%2C%20PR!5e0!3m2!1spt-BR!2sbr!4v1700000000000!5m2!1spt-BR!2sbr" width="100%" height="100%" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
                             
+                            <button style="position: absolute; top: 10px; left: 10px; background: white; border: 1px solid var(--border-color); padding: 6px 12px; border-radius: 4px; font-size: 13px; font-weight: bold; color: var(--gov-blue); cursor: pointer; display: flex; align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.15);" onclick="window.open('https://maps.google.com/?q=Curitiba', '_blank')">
+                                Abrir no Maps 
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-left: 6px;"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
+                            </button>
+
                             <button style="position: absolute; bottom: 15px; left: 15px; background: white; border: 1px solid var(--border-color); padding: 8px 14px; border-radius: 20px; font-size: 13px; font-weight: bold; color: var(--text-main); cursor: pointer; display: flex; align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.15); transition: background 0.2s;" onmouseover="this.style.background='#f0f4f8'" onmouseout="this.style.background='white'" onclick="alert('Simulação: A função de arrastar o pino para ajustar a geolocalização exata encontra-se em desenvolvimento.')">
                                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px;"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
                                 Editar local no mapa
                             </button>
                         </div>
                     </div>
+
                     <button class="btn-action" onclick="resetarSelecao()" style="margin-top: 8px;"><span>✎</span> Alterar seleção</button>
                 `;
             }
@@ -278,7 +291,7 @@
             localStorage.setItem('EnderecosGov_MVP_Confirmado', 'false');
             
             const btnConfirmar = document.querySelector('.btn-confirmar-geral');
-            btnConfirmar.innerHTML = `<span>&#x2714;</span> Confirmar`;
+            btnConfirmar.innerHTML = `<span>✔</span> Confirmar`;
             btnConfirmar.style.backgroundColor = 'var(--gov-blue)';
 
             document.getElementById('display-endereco').style.display = 'none';
@@ -322,6 +335,18 @@
             }
 
             localStorage.setItem('EnderecosGov_MVP_Confirmado', 'true');
+            
+            const rfIsMembro = localStorage.getItem('EnderecosGov_RF_Membro') !== 'false';
+            let bancoLocal = JSON.parse(localStorage.getItem('EnderecosGovDB'));
+            
+            for (const cpf in bancoLocal) {
+                if (cpf === "345.678.901-23" && !rfIsMembro) continue;
+                bancoLocal[cpf].confirmados = bancoLocal[cpf].confirmados || {};
+                bancoLocal[cpf].confirmados.endereco = endGlobal;
+                bancoLocal[cpf].confirmado = true;
+            }
+            localStorage.setItem('EnderecosGovDB', JSON.stringify(bancoLocal));
+            
             notificarComposicaoFamiliar(true);
             document.getElementById('modal-sucesso').style.display = 'flex';
         }

@@ -38,7 +38,6 @@
         .badge-rel { background-color: #e5e7eb; color: var(--text-main); }
         .badge-alert { background-color: #fef08a; color: #854d0e; border: 1px solid #fde047; }
 
-        /* --- O BLOCO EXATO QUE VOCÊ DESENHOU COM SUPORTE A FADE --- */
         .endereco-familia-box {
             display: none; 
             opacity: 0;
@@ -65,6 +64,21 @@
             font-weight: bold;
             text-transform: uppercase;
         }
+
+        /* Checkbox do RF */
+        .rf-membro-check {
+            font-size: 12px; 
+            display: flex; 
+            align-items: center; 
+            color: var(--text-main); 
+            cursor: pointer; 
+            font-weight: bold;
+        }
+        .rf-membro-check input {
+            margin-right: 6px;
+            transform: scale(1.2);
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
@@ -84,7 +98,10 @@
             <div class="member-card rf-card active" onclick="selecionarCPF('345.678.901-23', this)">
                 <div class="member-header">
                     <span class="badge badge-rf">Responsável Familiar (RF)</span>
-                    <span class="member-action-icon">&#8250;</span>
+                    <label class="rf-membro-check" onclick="event.stopPropagation()">
+                        <input type="checkbox" id="check-rf-membro" checked onchange="toggleRFMembro(this.checked)">
+                        Membro da Família
+                    </label>
                 </div>
                 <div class="member-name">João Oliveira da Silva</div>
                 <div class="member-cpf">CPF: 345.678.901-23</div>
@@ -133,17 +150,54 @@
     </div>
 
     <script>
-        function selecionarCPF(cpf, elemento) {
-            document.querySelectorAll('.member-card').forEach(card => card.classList.remove('active'));
-            elemento.classList.add('active');
-            window.parent.postMessage({ acao: 'mudarCPF', cpf: cpf }, '*');
-        }
-
         window.addEventListener('DOMContentLoaded', () => {
+            let rfMembro = localStorage.getItem('EnderecosGov_RF_Membro');
+            if (rfMembro === null) {
+                rfMembro = 'true';
+                localStorage.setItem('EnderecosGov_RF_Membro', 'true');
+            }
+            document.getElementById('check-rf-membro').checked = (rfMembro === 'true');
+
+            // Se o usuário carregar a página e o RF já estiver desmarcado, joga o foco inicial para a Maria
+            if (rfMembro === 'false') {
+                const mariaCard = document.querySelectorAll('.member-card')[1];
+                if (mariaCard) {
+                    selecionarCPF('456.789.012-34', mariaCard);
+                }
+            }
+
             const isConfirmado = localStorage.getItem('EnderecosGov_MVP_Confirmado') === 'true';
             const endereco = localStorage.getItem('EnderecosGov_MVP_Endereco');
             atualizarBoxFamiliar(isConfirmado, endereco);
         });
+
+        // Quando o Checkbox do RF é marcado/desmarcado
+        function toggleRFMembro(isChecked) {
+            localStorage.setItem('EnderecosGov_RF_Membro', isChecked);
+            if (!isChecked) {
+                const rfCard = document.querySelector('.rf-card');
+                // Se ele acabou de desmarcar e o RF estava ativo, seleciona automaticamente a Cônjuge
+                if (rfCard.classList.contains('active')) {
+                    const mariaCard = document.querySelectorAll('.member-card')[1];
+                    if (mariaCard) {
+                        selecionarCPF('456.789.012-34', mariaCard);
+                    }
+                }
+            }
+            window.parent.postMessage({ acao: 'recarregarDados' }, '*');
+        }
+
+        // Função de seleção padrão com a trava de segurança
+        function selecionarCPF(cpf, elemento) {
+            if (cpf === '345.678.901-23') {
+                const isMembro = document.getElementById('check-rf-membro').checked;
+                // Se tentar clicar no RF mas ele não é membro da família, aborta a ação!
+                if (!isMembro) return; 
+            }
+            document.querySelectorAll('.member-card').forEach(card => card.classList.remove('active'));
+            elemento.classList.add('active');
+            window.parent.postMessage({ acao: 'mudarCPF', cpf: cpf }, '*');
+        }
 
         // Recebe o sinal processado pelo roteador
         window.addEventListener('message', function(event) {
@@ -161,12 +215,11 @@
                 texto.innerHTML = endereco;
                 if (box.style.display !== 'block') {
                     box.style.display = 'block'; 
-                    void box.offsetWidth; // Força o navegador a renderizar o display block antes de aplicar o Fade
+                    void box.offsetWidth; 
                 }
                 box.classList.add('show');
             } else {
                 box.classList.remove('show');
-                // Aguarda o fim da animação de opacidade para ocultar o bloco de fato
                 setTimeout(() => {
                     if (!box.classList.contains('show')) {
                         box.style.display = 'none';

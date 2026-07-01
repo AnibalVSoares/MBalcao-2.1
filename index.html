@@ -28,7 +28,7 @@
     </div>
 
     <script>
-        // Roteador Universal de Mensagens (Garante que as telas conversem mesmo rodando localmente)
+        // Roteador Universal de Mensagens 
         window.addEventListener('message', function(event) {
             const data = event.data;
             if (!data || !data.acao) return;
@@ -36,8 +36,8 @@
             const frameDir = document.getElementById('frame-atualizacao');
             const frameEsq = document.querySelector('.iframe-esq');
 
-            // Repassa o clique do CPF para a tela da Direita
-            if (data.acao === 'mudarCPF' && frameDir && frameDir.contentWindow) {
+            // Repassa o clique do CPF e o recarregamento para a tela da Direita
+            if ((data.acao === 'mudarCPF' || data.acao === 'recarregarDados') && frameDir && frameDir.contentWindow) {
                 frameDir.contentWindow.postMessage(data, '*');
             }
             
